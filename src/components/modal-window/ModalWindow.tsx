@@ -1,7 +1,10 @@
+import { createArticle } from "Api/articles";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { addArticals } from "../../redux/action";
+import { addArticles } from "redux/action";
+
 import { Input } from "../input/Input";
+
 import {
   SModalBtn,
   SModalWindow,
@@ -9,11 +12,13 @@ import {
   SModalWindowTitle,
 } from "./styled";
 
-export const ModalWindow = ({ modalActive, setModalActive }) => {
-  const [activeBtn, setActiveBtn] = useState(false);
+export const ModalWindow = ({ modalActive, handleShowModal, newArticleId }) => {
+  const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const dispatch = useDispatch();
+  const isActiveBtn: boolean =
+    title.trim().split("").length > 0 && body.trim().split("").length > 0;
+  const [activeBtn, setActiveBtn] = useState<boolean>(isActiveBtn);
 
   useEffect(() => {
     const body = document.body;
@@ -21,27 +26,23 @@ export const ModalWindow = ({ modalActive, setModalActive }) => {
   }, [modalActive]);
 
   useEffect(() => {
-    if (title.split("").length > 0 && body.split("").length > 0) {
-      setActiveBtn(true);
-    } else {
-      setActiveBtn(false);
-    }
-  }, [title, body]);
+    setActiveBtn(isActiveBtn);
+  }, [isActiveBtn]);
 
-  const handelCangeTitle = (e) => {
-    setTitle(e.target.value);
+  const handleChangeTitle = ({ target: { value } }) => {
+    setTitle(value);
   };
 
-  const handelCangeBody = (e) => {
-    setBody(e.target.value);
+  const handleChangeBody = ({ target: { value } }) => {
+    setBody(value);
   };
 
   const handelClick = (e) => {
-    // setArtical({ body: body, title: title });
     if (activeBtn) {
-      dispatch(addArticals(body, title));
+      createArticle(body, title, 1);
+      dispatch(addArticles(body, title, newArticleId));
     }
-    setModalActive(false);
+    handleShowModal();
     e.preventDefault();
     setTitle("");
     setBody("");
@@ -51,37 +52,38 @@ export const ModalWindow = ({ modalActive, setModalActive }) => {
     alert("Please fill in the field!");
   };
 
+  const handleStopPropagation = (e) => {
+    e.stopPropagation();
+  };
+
   return (
     <SModalWindowFon
       vue={modalActive ? 1 : 0}
       pointer={modalActive ? "all" : "none"}
-      onClick={() => setModalActive(false)}
+      onClick={handleShowModal}
     >
       <SModalWindow
         trans={modalActive ? 1 : 0.5}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleStopPropagation}
       >
         <SModalWindowTitle>ADD ARTICLE</SModalWindowTitle>
-
         <Input
           type="text"
           name="title"
           value={title}
           placeholder="Title"
-          onChange={(e) => handelCangeTitle(e)}
+          onChange={handleChangeTitle}
         />
         <Input
           type="text"
           name="body"
           value={body}
           placeholder="Body"
-          onChange={(e) => handelCangeBody(e)}
+          onChange={handleChangeBody}
         />
-        {activeBtn ? (
-          <SModalBtn onClick={handelClick}>Create</SModalBtn>
-        ) : (
-          <SModalBtn onClick={handelAlert}>Create</SModalBtn>
-        )}
+        <SModalBtn onClick={activeBtn ? handelClick : handelAlert}>
+          Create
+        </SModalBtn>
       </SModalWindow>
     </SModalWindowFon>
   );

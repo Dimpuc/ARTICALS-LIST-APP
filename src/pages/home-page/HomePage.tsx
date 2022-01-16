@@ -1,9 +1,13 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { CardsArticles } from "../../components/cards-articles/CardsArticles";
-import { ModalWindow } from "../../components/modal-window/ModalWindow";
-import { setArticals } from "../../redux/action";
+
+import { CardsArticles } from "components/cards-articles/CardsArticles";
+import { ModalWindow } from "components/modal-window/ModalWindow";
+
+import { AppState } from "redux/store";
+import { setArticles } from "redux/action";
+import { getArticles } from "Api/articles";
+
 import {
   SHomeArticlesBlock,
   SHomePage,
@@ -17,11 +21,15 @@ import {
 export function HomePage() {
   const [modalActive, setModalActive] = useState(false);
   const dispatch = useDispatch();
-  const articles = useSelector((articles) => articles.articles);
+  const articles = useSelector((state: AppState) => state.articles);
+
+  const handleShowModal = () => {
+    setModalActive(!modalActive);
+  };
 
   useEffect(() => {
-    axios.get("https://jsonplaceholder.typicode.com/posts").then(({ data }) => {
-      dispatch(setArticals(data));
+    getArticles().then(({ data }) => {
+      dispatch(setArticles(data));
     });
   }, []);
 
@@ -29,12 +37,10 @@ export function HomePage() {
     <SHomePage>
       <SHomePageContainer>
         <SHomePageTopBlock>
-          <SHomeTitle>Articals List</SHomeTitle>
+          <SHomeTitle>Articles List</SHomeTitle>
           <SHomePageBtnBlock>
             <SHomePageBtn>Make big cards</SHomePageBtn>
-            <SHomePageBtn onClick={() => setModalActive(true)}>
-              Add Articles
-            </SHomePageBtn>
+            <SHomePageBtn onClick={handleShowModal}>Add Articles</SHomePageBtn>
           </SHomePageBtnBlock>
         </SHomePageTopBlock>
         <SHomeArticlesBlock>
@@ -44,7 +50,11 @@ export function HomePage() {
             ))}
         </SHomeArticlesBlock>
       </SHomePageContainer>
-      <ModalWindow modalActive={modalActive} setModalActive={setModalActive} />
+      <ModalWindow
+        modalActive={modalActive}
+        handleShowModal={handleShowModal}
+        newArticleId={articles.length}
+      />
     </SHomePage>
   );
 }

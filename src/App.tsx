@@ -10,7 +10,7 @@ function App() {
       <Router>
         <Header />
         <Routes>
-          <Route exact path="/" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/photos" element={<PhotosPage />} />
         </Routes>
